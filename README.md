@@ -13,3 +13,25 @@
  <!--* Пишнюк Микола : token is: 752dc25d-d73b-4e42-bf9c-600077329dde -->
  <!--* створив прототип сторінки -->
  <!--* додав мінімальний код для того щоб відтворити регістрацію каристувача на сайт та вихід з ного -->
+
+step-project-advanced-js
+│
+├─ public/
+│ ├─ index.html
+│ └─ index.js  
+│
+├─ source/
+│ ├─ components/
+│ │ ├─ index.js // збирає всі класи та експортує в головний файл в папці public
+│ │ ├─ Modal.js
+│ │ ├─ User.js
+│ │ └─ Guest.js
+│ │
+│ ├─ helpers/
+│ │ └─ Request.js // робота із сервером
+│ │
+│ ├─ constants/ // API_URL
+│ │ └─ api.js
+│ │
+│ └─ styles/ // стилі
+│ └─ style.css
