@@ -23,7 +23,13 @@ class User {
     parent.append(buttons);
 
     exitBtn.addEventListener(`click`, (event) => {
-      new Modal().exitAccount(buttons, parent);
+      const modal = new Modal();
+      modal.exitAccount(buttons, parent);
+    });
+
+    createBtn.addEventListener(`click`, (event) => {
+      const modal = new Modal();
+      modal.createVisit(parent);
     });
   }
 }
