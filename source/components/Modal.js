@@ -58,27 +58,30 @@ class Modal {
     });
   }
 
-  createVisit(parent) {
+  createVisitForm(parent) {
     const visitForm = document.createElement("form");
     visitForm.id = `create-visit`;
     visitForm.innerHTML = `
-            <input type="text" name="(ПІБ)" placeholder="Прізвище ім'я по батькові">
+            <input type="text" name="fullName" placeholder="Прізвище ім'я по батькові">
           <select name="doctor" id="doctor" required>
             <option value="" disabled selected> Оберіть доктора до якого хочете записатись на прийом </option>
-            <option value="cardiologist">Кардіолог</option>
-            <option value="dentist">Стоматолог</option>
-            <option value="therapist">Терапевт</option>
+            <option >Кардіолог</option>
+            <option >Стоматолог</option>
+            <option >Терапевт</option>
           </select>
 
-            <input type="text" name="(мета візиту)" placeholder="Мета візиту">
-            <input type="text" name="(короткий опис візиту)" placeholder="Короткий опис візиту">
+            <input type="text" name="visitPurpose" placeholder="Мета візиту">
+            <input type="text" name="visitDescription" placeholder="Короткий опис візиту">
 
           <select name="priority" id="priority" required>
             <option value="" disabled selected>Оберіть ступінь терміновості</option>
-            <option value="low">звичайна</option>
-            <option value="normal">пріоритетна</option>
-            <option value="high">невідкладна</option>
+            <option >Звичайна</option>
+            <option >Пріоритетна</option>
+            <option >Невідкладна</option>
           </select>
+
+          <div id="adding-doctor-fields"></div>
+          
             <button type="submit" class="submit" >Створити</button>
             <button type="button" class="close">Закрити</button>
             `;
