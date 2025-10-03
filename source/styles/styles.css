@@ -1,0 +1,15 @@
+@import './header.css';
+@import './filter.css';
+@import './cards.css';
+@import './modal.css';
+@import './footer.css';
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", Roboto, sans-serif;
+  background: linear-gradient(135deg, #f0f9ff, #e0f2fe, #dbeafe);
+  color: #111827;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
