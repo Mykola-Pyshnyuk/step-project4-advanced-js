@@ -29,7 +29,7 @@ class User {
 
     createBtn.addEventListener(`click`, (event) => {
       const modal = new Modal();
-      modal.createVisit(parent);
+      modal.createVisitForm(parent);
     });
   }
 }

@@ -5,10 +5,10 @@ class VisitDentist extends Visit {
     super(visit);
   }
   render() {
-    const insertAfterNode = this.visit.querySelector(`#priority`);
+    const insertAfterNode = this.visit.querySelector(`#adding-doctor-fields`);
     insertAfterNode.insertAdjacentHTML(
-      `afterend`,
-      `<input type="text" name="visitDate" placeholder="Дата останього візиту">`
+      `afterbegin`,
+      `<input type="date" min="2025-01-01" name="visitDate" placeholder="Дата останього візиту">`
     );
   }
 }
