@@ -1,3 +1,5 @@
+import { handleCreateCardFromForm } from "../helpers/cardsPanel.js";
+
 class Visit {
   constructor(visit) {
     this.visit = visit;
@@ -74,3 +76,13 @@ class Visit {
 }
 
 export default Visit;
+
+const originalRenderVisitCard = Visit.prototype.renderVisitCard;
+
+Visit.prototype.renderVisitCard = function () {
+  const visitInstance = this;
+
+  handleCreateCardFromForm(visitInstance).catch(function () {
+    originalRenderVisitCard.call(visitInstance);
+  });
+};
