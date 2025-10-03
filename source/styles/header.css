@@ -1,0 +1,52 @@
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 40px;
+  background: #ffffffcc; 
+  backdrop-filter: blur(10px);
+  border-bottom: 2px solid #2563eb33;
+  border-radius: 15px;
+  margin: 10px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+.logo-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 22px;
+  color: #2563eb;
+  transition: all 0.3s;
+}
+
+.logo-link:hover {
+  color: #1d4ed8;
+}
+
+.logo-svg {
+  width: 44px;
+  height: 44px;
+  transition: transform 0.3s ease;
+}
+
+.logo-link:hover .logo-svg {
+  transform: rotate(15deg);
+}
+
+.login {
+  padding: 8px 20px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  border: none;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.login:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, #1e40af, #2563eb);
+}

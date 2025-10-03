@@ -5,35 +5,47 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="/source/styles/styles.css">
 </head>
 
 <body>
 
-    <header class="page-header" style="display: flex; justify-content: space-between;">
-        <div>logo</div>
+    <header class="page-header">
+        <a href="#" class="logo-link" aria-label="Перейти на головну">
+  <svg class="logo-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+    <circle cx="32" cy="32" r="30" fill="#EAF2FF"/>
+    <rect x="28" y="16" width="8" height="32" rx="2" fill="#2563eb"/>
+    <rect x="16" y="28" width="32" height="8" rx="2" fill="#2563eb"/>
+    <path d="M8 40 L18 32 L24 36 L30 24 L36 44 L44 28 L56 40"
+          stroke="#ffffff" stroke-width="3" stroke-linecap="round"
+          stroke-linejoin="round" fill="none" opacity="0.95"/>
+  </svg>
+  <span class="logo-text">MediHub</span>
+</a>
         <!--* <button class="login" type="button">Login</button> -->
     </header>
 
-    <article style="display: flex; justify-content: space-evenly;">
-        <form id="filterForm" style="display: flex; gap: 20px;">
+    <article class="filter-container">
+        <form class="filterForm" id="filterForm">
 
-            <input type="text" style="width: 150px;" name="search" placeholder="Пошук за заголовком ....">
+            <input class="filterForm_input" type="text" name="search" placeholder="Пошук за заголовком ....">
 
 
-            <select name="status">
+
+            <select class="filter-form_select" name="status">
                 <option value="">all</option>
                 <option value="open">Open</option>
                 <option value="done">Done</option>
             </select>
 
-            <select name="priority">
+            <select class="filter-form_select" name="priority">
                 <option value="">all</option>
                 <option value="low">Low</option>
                 <option value="normal">Normal</option>
                 <option value="high">High</option>
             </select>
 
-            <button type="submit" class="submit">Search</button>
+            <button class="filter-form_btn" type="submit">Search</button>
         </form>
     </article>
 
@@ -52,9 +64,14 @@
         </div>
     </section>
 
-    <footer>
-
-    </footer>
+    <footer class="footer">
+  <span class="footer-text">© MediHub. All rights reserved.</span>
+  <nav class="footer-links-list">
+    <a class="footer-links-item" href="#">Privacy Policy</a>
+    <a class="footer-links-item" href="#">Terms</a>
+    <a class="footer-links-item" href="#">Contact</a>
+  </nav>
+</footer>
 
     <script type="module" src="./index.js"></script>
 </body>
