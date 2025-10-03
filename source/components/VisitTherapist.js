@@ -6,9 +6,9 @@ class VisitTherapist extends Visit {
   }
 
   render() {
-    const insertAfterNode = this.visit.querySelector(`#priority`);
+    const insertAfterNode = this.visit.querySelector(`#adding-doctor-fields`);
     insertAfterNode.insertAdjacentHTML(
-      `afterend`,
+      `afterbegin`,
       `<input type="number" name="age" placeholder="Вік"> `
     );
   }
