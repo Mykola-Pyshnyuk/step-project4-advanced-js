@@ -12,6 +12,10 @@ class VisitTherapist extends Visit {
       `<input type="number" name="age" placeholder="Вік"> `
     );
   }
+
+  renderVisitCard(visitFullInfo, { age }) {
+    visitFullInfo.innerHTML = `<p>Вік: ${age}</p>`;
+  }
 }
 
 export { VisitTherapist };
