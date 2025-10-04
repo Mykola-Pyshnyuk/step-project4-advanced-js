@@ -62,23 +62,24 @@ class Modal {
     const visitForm = document.createElement("form");
     visitForm.id = `create-visit`;
     visitForm.innerHTML = `
-            <input type="text" name="fullName" placeholder="Прізвище ім'я по батькові">
+            <input type="text" name="fullName" placeholder="Прізвище ім'я по батькові" required>
           <select name="doctor" id="doctor" required>
             <option value="" disabled selected> Оберіть доктора до якого хочете записатись на прийом </option>
-            <option >Кардіолог</option>
-            <option >Стоматолог</option>
-            <option >Терапевт</option>
+            <option value="Кардіолог">Кардіолог</option>
+            <option value="Стоматолог">Стоматолог</option>
+            <option value="Терапевт">Терапевт</option>
           </select>
 
-            <input type="text" name="visitPurpose" placeholder="Мета візиту">
-            <input type="text" name="visitDescription" placeholder="Короткий опис візиту">
+            <input type="text" name="visitPurpose" placeholder="Мета візиту" required>
+            <input type="text" name="visitDescription" placeholder="Короткий опис візиту" required>
 
           <select name="priority" id="priority" required>
             <option value="" disabled selected>Оберіть ступінь терміновості</option>
-            <option >Звичайна</option>
-            <option >Пріоритетна</option>
-            <option >Невідкладна</option>
+            <option value="low">Низький</option>
+            <option value="normal">Середній</option>
+            <option value="high">Високий</option>
           </select>
+          <input type="hidden" name="status" value="open">
 
           <div id="adding-doctor-fields"></div>
           
@@ -91,5 +92,3 @@ class Modal {
 }
 
 export default Modal;
-
-
