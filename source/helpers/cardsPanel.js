@@ -1,268 +1,702 @@
 import { getCards, createCard, updateCard, deleteCard } from "./index.js";
 
-let defaultEmptyText = null;
+const FIELD_LABELS = {
+  fullName: "ПІБ пацієнта",
+  doctor: "Лікар",
+  visitPurpose: "Мета візиту",
+  visitDescription: "Опис візиту",
+  priority: "Терміновість",
+  status: "Статус",
+  bloodPressure: "Артеріальний тиск",
+  bodyMassIndex: "Індекс маси тіла",
+  heartDisease: "Серцево-судинні захворювання",
+  age: "Вік",
+  lastVisitDate: "Дата останнього візиту",
+  visitDate: "Дата останнього візиту",
+  weight: "Вага",
+  pressure: "Тиск",
+  temperature: "Температура",
+  residence: "Місце проживання",
+  additionalInfo: "Додаткова інформація"
+};
 
-function getRoot() {
+const STATUS_LABELS = {
+  open: "Активна",
+  done: "Завершена"
+};
+
+const PRIORITY_LABELS = {
+  low: "Низький",
+  normal: "Середній",
+  high: "Високий"
+};
+
+const SELECT_OPTIONS = {
+  doctor: [
+    { value: "Кардіолог", label: "Кардіолог" },
+    { value: "Стоматолог", label: "Стоматолог" },
+    { value: "Терапевт", label: "Терапевт" }
+  ],
+  status: [
+    { value: "open", label: STATUS_LABELS.open },
+    { value: "done", label: STATUS_LABELS.done }
+  ],
+  priority: [
+    { value: "low", label: PRIORITY_LABELS.low },
+    { value: "normal", label: PRIORITY_LABELS.normal },
+    { value: "high", label: PRIORITY_LABELS.high }
+  ]
+};
+
+const CARD_MAIN_FIELDS = ["fullName", "doctor", "visitPurpose", "visitDescription", "priority", "status"];
+const CARD_EXTRA_FIELDS = [
+  "bloodPressure",
+  "bodyMassIndex",
+  "heartDisease",
+  "age",
+  "lastVisitDate",
+  "visitDate",
+  "weight",
+  "pressure",
+  "temperature",
+  "residence",
+  "additionalInfo"
+];
+
+const EDITABLE_FIELDS = CARD_MAIN_FIELDS.concat(CARD_EXTRA_FIELDS);
+
+const EMPTY_STATE_ID = "cards-empty-state";
+const DEFAULT_EMPTY_TEXT = "Ще немає карток";
+const OVERLAY_CLASS = "card-edit-overlay";
+
+const NOTIFICATION_STYLES = {
+  info: { background: "#e0f2fe", color: "#1d4ed8" },
+  success: { background: "#dcfce7", color: "#15803d" },
+  error: { background: "#fee2e2", color: "#b91c1c" }
+};
+
+const state = {
+  cards: [],
+  filters: { status: "", priority: "", search: "" },
+  tempId: 0,
+  notificationTimer: null
+};
+
+let activeOverlayEscHandler = null;
+
+function getRootNode() {
   return document.getElementById("root");
 }
 
 function getEmptyNode() {
-  return document.querySelector("section h4");
+  return document.getElementById(EMPTY_STATE_ID);
 }
 
-function rememberDefaultText() {
-  if (defaultEmptyText !== null) {
+function showEmptyMessage(text) {
+  const node = getEmptyNode();
+
+  if (!node) {
     return;
   }
 
-  const emptyNode = getEmptyNode();
-  if (emptyNode) {
-    defaultEmptyText = emptyNode.textContent || "";
-  }
-}
-
-function setEmptyMessage(text) {
-  const emptyNode = getEmptyNode();
-
-  if (!emptyNode) {
-    return;
-  }
-
-  rememberDefaultText();
-
-  if (typeof text === "string" && text.length > 0) {
-    emptyNode.textContent = text;
-  } else {
-    emptyNode.textContent = defaultEmptyText || "";
-  }
-
-  emptyNode.style.display = "block";
+  node.textContent = text || DEFAULT_EMPTY_TEXT;
+  node.style.display = "block";
 }
 
 function hideEmptyMessage() {
-  const emptyNode = getEmptyNode();
+  const node = getEmptyNode();
 
-  if (!emptyNode) {
+  if (!node) {
     return;
   }
 
-  emptyNode.style.display = "none";
+  node.style.display = "none";
 }
 
-export function clearCardsUI() {
-  const root = getRoot();
+function showNotification(message, type = "info") {
+  const box = document.getElementById("cards-notification");
 
-  if (root) {
-    root.innerHTML = "";
-  }
-
-  setEmptyMessage();
-}
-
-export function loadCards() {
-  const root = getRoot();
-
-  if (!root) {
-    return Promise.resolve();
-  }
-
-  root.innerHTML = "";
-  setEmptyMessage("Завантаження карток...");
-
-  return getCards()
-    .then(function (cards) {
-      root.innerHTML = "";
-
-      if (Array.isArray(cards) && cards.length > 0) {
-        hideEmptyMessage();
-
-        for (let index = 0; index < cards.length; index += 1) {
-          renderCard(cards[index]);
-        }
-      } else {
-        setEmptyMessage();
-      }
-    })
-    .catch(function (error) {
-      console.error(error);
-      setEmptyMessage("Не вдалося завантажити картки");
-      alert("Не вдалося завантажити картки. Перевірте дані та спробуйте ще раз.");
-    });
-}
-
-function renderCard(card) {
-  const root = getRoot();
-
-  if (!root || !card) {
+  if (!box) {
     return;
   }
 
-  hideEmptyMessage();
+  const style = NOTIFICATION_STYLES[type] || NOTIFICATION_STYLES.info;
 
-  const visitCard = document.createElement("div");
-  visitCard.className = "visit-card";
-  visitCard.dataset.cardId = card.id;
+  box.textContent = message;
+  box.style.display = "block";
+  box.style.backgroundColor = style.background;
+  box.style.color = style.color;
 
-  try {
-    visitCard.dataset.card = JSON.stringify(card);
-  } catch (error) {
-    visitCard.dataset.card = "{}";
+  if (state.notificationTimer) {
+    clearTimeout(state.notificationTimer);
   }
+
+  state.notificationTimer = window.setTimeout(function () {
+    box.style.display = "none";
+  }, 2500);
+}
+
+function normalizeStatus(value) {
+  const normalized = (value || "").toString().trim().toLowerCase();
+
+  if (!normalized) {
+    return "";
+  }
+
+  if (normalized === "done" || normalized === "завершена") {
+    return "done";
+  }
+
+  return "open";
+}
+
+function normalizePriority(value) {
+  const normalized = (value || "").toString().trim().toLowerCase();
+
+  if (!normalized) {
+    return "";
+  }
+
+  const priorityMap = {
+    low: "low",
+    "низький": "low",
+    "низька": "low",
+    high: "high",
+    "високий": "high",
+    "висока": "high",
+    normal: "normal",
+    "середній": "normal",
+    "середня": "normal"
+  };
+
+  return priorityMap[normalized] || normalized;
+}
+
+function getStatusLabel(value) {
+  const key = normalizeStatus(value) || "open";
+  return STATUS_LABELS[key] || value || "-";
+}
+
+function getPriorityLabel(value) {
+  const key = normalizePriority(value) || "normal";
+  return PRIORITY_LABELS[key] || value || "-";
+}
+
+function formatValue(fieldName, value) {
+  if (fieldName === "status") {
+    return getStatusLabel(value);
+  }
+
+  if (fieldName === "priority") {
+    return getPriorityLabel(value);
+  }
+
+  if (value === 0) {
+    return "0";
+  }
+
+  return value || "-";
+}
+
+function cloneCard(card) {
+  const copy = {};
+
+  Object.keys(card || {}).forEach(function (key) {
+    copy[key] = card[key];
+  });
+
+  copy.status = normalizeStatus(copy.status) || "open";
+  copy.priority = normalizePriority(copy.priority) || "normal";
+  copy.localId = card && card.id ? String(card.id) : generateTempId();
+
+  return copy;
+}
+
+function generateTempId() {
+  state.tempId += 1;
+  return "tmp-" + state.tempId;
+}
+
+function removeEditOverlay() {
+  const overlay = document.querySelector("." + OVERLAY_CLASS);
+
+  if (overlay) {
+    overlay.remove();
+  }
+
+  if (activeOverlayEscHandler) {
+    document.removeEventListener("keydown", activeOverlayEscHandler);
+    activeOverlayEscHandler = null;
+  }
+}
+
+function matchesFilters(card) {
+  if (!card) {
+    return false;
+  }
+
+  if (state.filters.status) {
+    if (normalizeStatus(card.status) !== state.filters.status) {
+      return false;
+    }
+  }
+
+  if (state.filters.priority) {
+    if (normalizePriority(card.priority) !== state.filters.priority) {
+      return false;
+    }
+  }
+
+  if (state.filters.search) {
+    const haystack = [
+      card.fullName,
+      card.doctor,
+      card.visitPurpose,
+      card.visitDescription,
+      card.additionalInfo,
+      card.residence,
+      getStatusLabel(card.status),
+      getPriorityLabel(card.priority)
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+    if (!haystack.includes(state.filters.search)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function createCardElement(card) {
+  const cardBox = document.createElement("div");
+  cardBox.className = "visit-card";
+  cardBox.dataset.cardId = card.localId;
 
   const closeButton = document.createElement("button");
   closeButton.type = "button";
   closeButton.className = "close";
   closeButton.textContent = "X";
-  visitCard.appendChild(closeButton);
+  cardBox.appendChild(closeButton);
 
-  const fullNameLine = document.createElement("p");
-  fullNameLine.textContent = "ПІБ пацієнта: " + (card.fullName || "");
-  visitCard.appendChild(fullNameLine);
+  CARD_MAIN_FIELDS.forEach(function (field) {
+    appendInfoLine(cardBox, field, card[field]);
+  });
 
-  const doctorLine = document.createElement("p");
-  doctorLine.textContent = "Доктор: " + (card.doctor || "");
-  visitCard.appendChild(doctorLine);
+  const detailsBox = document.createElement("div");
+  detailsBox.className = "visit-details";
+  detailsBox.style.display = "none";
 
-  const purposeLine = document.createElement("p");
-  purposeLine.textContent = "Мета візиту: " + (card.visitPurpose || "");
-  visitCard.appendChild(purposeLine);
-
-  const descriptionLine = document.createElement("p");
-  descriptionLine.textContent = "Короткий опис візиту: " + (card.visitDescription || "");
-  visitCard.appendChild(descriptionLine);
-
-  const priorityLine = document.createElement("p");
-  priorityLine.textContent = "Ступінь терміновості: " + (card.priority || "");
-  visitCard.appendChild(priorityLine);
-
-  const detailsContainer = document.createElement("div");
-  detailsContainer.id = "visit-full-info";
-  detailsContainer.style.display = "none";
-
-  const cardKeys = Object.keys(card);
-  for (let index = 0; index < cardKeys.length; index += 1) {
-    const key = cardKeys[index];
-
-    if (
-      key === "id" ||
-      key === "fullName" ||
-      key === "doctor" ||
-      key === "visitPurpose" ||
-      key === "visitDescription" ||
-      key === "priority"
-    ) {
-      continue;
+  CARD_EXTRA_FIELDS.forEach(function (field) {
+    if (card[field] !== undefined && card[field] !== null && card[field] !== "") {
+      appendInfoLine(detailsBox, field, card[field]);
     }
+  });
 
-    const value = card[key];
+  cardBox.appendChild(detailsBox);
 
-    if (value === "" || value === null || typeof value === "undefined") {
-      continue;
-    }
-
-    const detailLine = document.createElement("p");
-    detailLine.textContent = key + ": " + value;
-    detailsContainer.appendChild(detailLine);
-  }
-
-  visitCard.appendChild(detailsContainer);
-
-  const showMoreButton = document.createElement("button");
-  showMoreButton.type = "button";
-  showMoreButton.className = "show-more";
-  showMoreButton.textContent = "Показати більше";
-  visitCard.appendChild(showMoreButton);
+  const toggleButton = document.createElement("button");
+  toggleButton.type = "button";
+  toggleButton.className = "show-more";
+  toggleButton.textContent = "Показати більше";
+  cardBox.appendChild(toggleButton);
 
   const editButton = document.createElement("button");
   editButton.type = "button";
   editButton.className = "edit-visit";
   editButton.textContent = "Редагувати";
-  visitCard.appendChild(editButton);
+  cardBox.appendChild(editButton);
 
-  root.appendChild(visitCard);
-
-  showMoreButton.addEventListener("click", function () {
-    if (detailsContainer.style.display === "none") {
-      detailsContainer.style.display = "block";
-      showMoreButton.textContent = "Сховати";
-    } else {
-      detailsContainer.style.display = "none";
-      showMoreButton.textContent = "Показати більше";
-    }
+  toggleButton.addEventListener("click", function () {
+    const isHidden = detailsBox.style.display === "none";
+    detailsBox.style.display = isHidden ? "block" : "none";
+    toggleButton.textContent = isHidden ? "Сховати" : "Показати більше";
   });
 
   closeButton.addEventListener("click", function () {
-    if (!confirm("Видалити картку?")) {
+    if (!card.id) {
+      showNotification("Немає ідентифікатора картки для видалення", "error");
+      return;
+    }
+
+    if (!window.confirm("Видалити картку?")) {
       return;
     }
 
     deleteCard(card.id)
       .then(function () {
-        loadCards();
+        state.cards = state.cards.filter(function (item) {
+          return item.localId !== card.localId;
+        });
+        renderCards();
+        showNotification("Картку видалено", "success");
       })
-      .catch(function (error) {
-        console.error(error);
-        alert("Не вдалося видалити картку.");
+      .catch(function () {
+        showNotification("Не вдалося видалити картку", "error");
       });
   });
 
   editButton.addEventListener("click", function () {
-    startEditCard(visitCard);
+    openEditModal(card);
   });
+
+  return cardBox;
 }
 
-function startEditCard(cardElement) {
-  const storedCard = cardElement.dataset.card || "{}";
-  let cardData;
+function appendInfoLine(parent, fieldName, value) {
+  const line = document.createElement("p");
+  line.textContent = (FIELD_LABELS[fieldName] || fieldName) + ": " + formatValue(fieldName, value);
+  parent.appendChild(line);
+}
 
-  try {
-    cardData = JSON.parse(storedCard);
-  } catch (error) {
-    cardData = {};
-  }
+function openEditModal(card) {
+  removeEditOverlay();
 
-  if (!cardData || !cardData.id) {
-    alert("Не вдалося знайти дані картки.");
-    return;
-  }
+  const overlay = document.createElement("div");
+  overlay.className = OVERLAY_CLASS;
+  overlay.style.position = "fixed";
+  overlay.style.top = "0";
+  overlay.style.left = "0";
+  overlay.style.right = "0";
+  overlay.style.bottom = "0";
+  overlay.style.backgroundColor = "rgba(0, 0, 0, 0.3)";
+  overlay.style.display = "flex";
+  overlay.style.alignItems = "center";
+  overlay.style.justifyContent = "center";
+  overlay.style.padding = "16px";
+  overlay.style.zIndex = "999";
 
-  const updatedCard = {};
-  const keys = Object.keys(cardData);
+  const modal = document.createElement("div");
+  modal.style.backgroundColor = "#ffffff";
+  modal.style.padding = "16px";
+  modal.style.borderRadius = "10px";
+  modal.style.width = "min(520px, 94vw)";
+  modal.style.maxHeight = "80vh";
+  modal.style.overflow = "hidden";
+  modal.style.display = "flex";
+  modal.style.flexDirection = "column";
+  modal.style.gap = "12px";
 
-  for (let index = 0; index < keys.length; index += 1) {
-    const key = keys[index];
+  const header = document.createElement("div");
+  header.style.display = "flex";
+  header.style.justifyContent = "space-between";
+  header.style.alignItems = "center";
 
-    if (key === "id") {
-      updatedCard[key] = cardData[key];
-      continue;
-    }
+  const title = document.createElement("h3");
+  title.textContent = "Редагування картки";
+  title.style.margin = "0";
+  header.appendChild(title);
 
-    let currentValue = cardData[key];
+  const closeButton = document.createElement("button");
+  closeButton.type = "button";
+  closeButton.textContent = "×";
+  closeButton.style.fontSize = "20px";
+  closeButton.style.lineHeight = "1";
+  closeButton.style.border = "none";
+  closeButton.style.background = "transparent";
+  closeButton.style.cursor = "pointer";
+  header.appendChild(closeButton);
 
-    if (currentValue === null || typeof currentValue === "undefined") {
-      currentValue = "";
-    }
+  modal.appendChild(header);
 
-    const newValue = prompt("Введіть значення для " + key, currentValue);
+  const form = document.createElement("form");
+  form.className = "card-edit-form";
+  form.style.display = "flex";
+  form.style.flexDirection = "column";
+  form.style.gap = "12px";
+  form.style.flex = "1";
 
-    if (newValue === null) {
+  const fieldsWrapper = document.createElement("div");
+  fieldsWrapper.style.display = "grid";
+  fieldsWrapper.style.gridTemplateColumns = "repeat(auto-fill, minmax(200px, 1fr))";
+  fieldsWrapper.style.gap = "8px";
+  fieldsWrapper.style.maxHeight = "50vh";
+  fieldsWrapper.style.overflowY = "auto";
+
+  EDITABLE_FIELDS.forEach(function (field) {
+    fieldsWrapper.appendChild(buildEditField(field, card[field] || ""));
+  });
+
+  form.appendChild(fieldsWrapper);
+
+  const buttonsRow = document.createElement("div");
+  buttonsRow.style.display = "flex";
+  buttonsRow.style.justifyContent = "flex-end";
+  buttonsRow.style.gap = "8px";
+
+  const cancelButton = document.createElement("button");
+  cancelButton.type = "button";
+  cancelButton.textContent = "Скасувати";
+  cancelButton.style.padding = "6px 16px";
+
+  const saveButton = document.createElement("button");
+  saveButton.type = "submit";
+  saveButton.textContent = "Зберегти";
+  saveButton.style.padding = "6px 16px";
+  saveButton.style.backgroundColor = "#2563eb";
+  saveButton.style.color = "#ffffff";
+  saveButton.style.border = "1px solid #2563eb";
+  saveButton.style.borderRadius = "6px";
+
+  buttonsRow.appendChild(cancelButton);
+  buttonsRow.appendChild(saveButton);
+  form.appendChild(buttonsRow);
+
+  modal.appendChild(form);
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+
+  let isClosed = false;
+
+  function closeOverlay() {
+    if (isClosed) {
       return;
     }
 
-    updatedCard[key] = newValue;
+    isClosed = true;
+    document.removeEventListener("keydown", handleKeydown);
+    activeOverlayEscHandler = null;
+    overlay.remove();
   }
 
-  if (!updatedCard.id) {
-    updatedCard.id = cardData.id;
+  function handleKeydown(event) {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closeOverlay();
+    }
   }
 
-  updateCard(cardData.id, updatedCard)
-    .then(function () {
-      loadCards();
+  document.addEventListener("keydown", handleKeydown);
+  activeOverlayEscHandler = handleKeydown;
+
+  closeButton.addEventListener("click", closeOverlay);
+  cancelButton.addEventListener("click", closeOverlay);
+
+  overlay.addEventListener("click", function (event) {
+    if (event.target === overlay) {
+      closeOverlay();
+    }
+  });
+
+  form.addEventListener("submit", function (event) {
+    event.preventDefault();
+
+    if (!card.id) {
+      showNotification("Немає ідентифікатора картки", "error");
+      return;
+    }
+
+    const formData = new FormData(form);
+    const updatedCard = {};
+
+    formData.forEach(function (value, key) {
+      updatedCard[key] = value;
+    });
+
+    updatedCard.status = normalizeStatus(updatedCard.status) || "open";
+    updatedCard.priority = normalizePriority(updatedCard.priority) || "normal";
+
+    updateCard(card.id, updatedCard)
+      .then(function (savedCard) {
+        const mergedCard = savedCard || Object.assign({}, card, updatedCard, { id: card.id });
+        const freshCard = cloneCard(mergedCard);
+
+        state.cards = state.cards.map(function (item) {
+          if (item.localId === card.localId) {
+            return freshCard;
+          }
+          return item;
+        });
+
+        closeOverlay();
+        showNotification("Картку оновлено", "success");
+        renderCards();
+      })
+      .catch(function () {
+        showNotification("Не вдалося оновити картку", "error");
+      });
+  });
+}
+
+function buildEditField(fieldName, value) {
+  const field = document.createElement("label");
+  field.style.display = "flex";
+  field.style.flexDirection = "column";
+  field.style.gap = "4px";
+
+  const caption = document.createElement("span");
+  caption.textContent = FIELD_LABELS[fieldName] || fieldName;
+  field.appendChild(caption);
+
+  if (SELECT_OPTIONS[fieldName]) {
+    const select = document.createElement("select");
+    select.name = fieldName;
+
+    SELECT_OPTIONS[fieldName].forEach(function (optionData) {
+      const option = document.createElement("option");
+      option.value = optionData.value;
+      option.textContent = optionData.label;
+      if (optionData.value === (value || "")) {
+        option.selected = true;
+      }
+      select.appendChild(option);
+    });
+
+    field.appendChild(select);
+    return field;
+  }
+
+  const input = document.createElement("input");
+  input.type = "text";
+  input.name = fieldName;
+  input.value = value || "";
+  field.appendChild(input);
+
+  return field;
+}
+
+function applyFiltersFromForm(form) {
+  const previousFilters = Object.assign({}, state.filters);
+  const formData = new FormData(form);
+
+  state.filters.status = normalizeStatus(formData.get("status"));
+  state.filters.priority = normalizePriority(formData.get("priority"));
+  state.filters.search = (formData.get("search") || "").trim().toLowerCase();
+
+  renderCards();
+
+  if (
+    previousFilters.status !== state.filters.status ||
+    previousFilters.priority !== state.filters.priority ||
+    previousFilters.search !== state.filters.search
+  ) {
+    showNotification("Фільтри застосовано", "info");
+  }
+}
+
+function setupFilters() {
+  const filterForm = document.getElementById("filterForm");
+
+  if (!filterForm) {
+    return;
+  }
+
+  applyFiltersFromForm(filterForm);
+
+  filterForm.addEventListener("submit", function (event) {
+    event.preventDefault();
+    applyFiltersFromForm(filterForm);
+  });
+
+  filterForm.addEventListener("change", function (event) {
+    if (event.target && (event.target.name === "status" || event.target.name === "priority")) {
+      applyFiltersFromForm(filterForm);
+    }
+  });
+
+  const searchInput = filterForm.querySelector('input[name="search"]');
+
+  if (searchInput) {
+    searchInput.addEventListener("input", function () {
+      state.filters.search = searchInput.value.trim().toLowerCase();
+      renderCards();
+    });
+  }
+}
+
+function setupEmptyPlaceholder() {
+  const section = document.querySelector("section");
+
+  if (!section) {
+    return;
+  }
+
+  let placeholder = document.getElementById(EMPTY_STATE_ID);
+
+  if (!placeholder) {
+    placeholder = section.querySelector("h4");
+
+    if (!placeholder) {
+      placeholder = document.createElement("h4");
+      section.insertBefore(placeholder, section.firstChild || null);
+    } else if (placeholder !== section.firstChild) {
+      section.insertBefore(placeholder, section.firstChild || null);
+    }
+  }
+
+  placeholder.id = EMPTY_STATE_ID;
+  placeholder.textContent = DEFAULT_EMPTY_TEXT;
+}
+
+function renderCards() {
+  const root = getRootNode();
+
+  if (!root) {
+    return;
+  }
+
+  removeEditOverlay();
+  root.innerHTML = "";
+
+  const filteredCards = state.cards.filter(matchesFilters);
+
+  if (filteredCards.length === 0) {
+    const hasFilters = Boolean(state.filters.status || state.filters.priority || state.filters.search);
+    showEmptyMessage(hasFilters ? "За вибраними фільтрами картки не знайдено" : DEFAULT_EMPTY_TEXT);
+
+    if (hasFilters) {
+      showNotification("За вибраними фільтрами картки не знайдено", "info");
+    }
+
+    return;
+  }
+
+  hideEmptyMessage();
+
+  filteredCards.forEach(function (card) {
+    root.appendChild(createCardElement(card));
+  });
+}
+
+export function clearCardsUI() {
+  const root = getRootNode();
+
+  if (root) {
+    root.innerHTML = "";
+  }
+
+  state.cards = [];
+  state.tempId = 0;
+  removeEditOverlay();
+  showEmptyMessage(DEFAULT_EMPTY_TEXT);
+}
+
+export function loadCards() {
+  const root = getRootNode();
+
+  if (!root) {
+    return Promise.resolve();
+  }
+
+  showEmptyMessage("Завантаження карток...");
+
+  return getCards()
+    .then(function (cards) {
+      if (!Array.isArray(cards)) {
+        showNotification("Очікувався масив карток", "error");
+        showEmptyMessage("Не вдалося отримати картки");
+        return;
+      }
+
+      state.tempId = 0;
+      state.cards = cards.map(cloneCard);
+      renderCards();
     })
-    .catch(function (error) {
-      console.error(error);
-      alert("Не вдалося оновити картку.");
+    .catch(function () {
+      showEmptyMessage("Не вдалося завантажити картки");
+      showNotification("Не вдалося завантажити картки. Спробуйте ще раз.", "error");
     });
 }
 
@@ -272,20 +706,27 @@ export function handleCreateCardFromForm(visitInstance) {
   }
 
   const formData = new FormData(visitInstance.visit);
-  const cardData = {};
+  const payload = {};
 
   formData.forEach(function (value, key) {
-    cardData[key] = value;
+    payload[key] = value;
   });
 
-  return createCard(cardData)
-    .then(function () {
-      return loadCards();
+  payload.status = normalizeStatus(payload.status) || "open";
+  payload.priority = normalizePriority(payload.priority) || "normal";
+
+  return createCard(payload)
+    .then(function (createdCard) {
+      const mergedCard = createdCard || payload;
+      const freshCard = cloneCard(mergedCard);
+
+      state.cards.push(freshCard);
+      showNotification("Картку створено", "success");
+      renderCards();
+      return createdCard;
     })
-    .catch(function (error) {
-      console.error(error);
-      alert("Не вдалося створити картку. Перевірте дані і спробуйте ще раз.");
-      throw error;
+    .catch(function () {
+      showNotification("Не вдалося створити картку. Перевірте дані та спробуйте ще раз.", "error");
     });
 }
 
@@ -294,9 +735,12 @@ document.addEventListener("user-logged-in", function () {
 });
 
 document.addEventListener("click", function (event) {
-  const target = event.target;
-
-  if (target && target.classList.contains("logout-yes")) {
+  if (event.target && event.target.classList.contains("logout-yes")) {
     clearCardsUI();
   }
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+  setupEmptyPlaceholder();
+  setupFilters();
 });

@@ -46,7 +46,7 @@ class Request {
     })
       .then((response) => {
         if (!response.ok) {
-          throw new Error("Підчас реєстрації виникла помилка");
+          throw new Error("Під час входу сталася помилка");
         }
         return response.text();
       })

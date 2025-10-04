@@ -1,15 +1,16 @@
-import Visit from "./Visit.js";
-
-class VisitTherapist extends Visit {
+class VisitTherapist {
   constructor(visit) {
-    super(visit);
+    this.visit = visit;
   }
 
   render() {
     const insertAfterNode = this.visit.querySelector(`#adding-doctor-fields`);
+    if (!insertAfterNode) {
+      return;
+    }
     insertAfterNode.insertAdjacentHTML(
       `afterbegin`,
-      `<input type="number" name="age" placeholder="Вік"> `
+      `<input type="number" name="age" placeholder="Вік" required>`
     );
   }
 }
