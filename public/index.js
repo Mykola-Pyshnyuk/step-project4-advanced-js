@@ -7,6 +7,7 @@ document.addEventListener(`DOMContentLoaded`, (event) => {
     console.log("Ви зареєстровані");
     const user = new User();
     user.dashboard(authSection);
+    document.dispatchEvent(new Event("user-logged-in"));
   } else {
     console.log("Ви не зареєстровані");
     const guest = new Guest();
