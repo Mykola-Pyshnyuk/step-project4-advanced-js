@@ -13,9 +13,6 @@ class VisitDentist {
       `<input type="date" min="2025-01-01" name="visitDate" placeholder="Дата останнього візиту" required>`
     );
   }
-  renderVisitCard(visitFullInfo, { visitDate }) {
-    visitFullInfo.innerHTML = `<p>Дата останього візиту: ${visitDate}</p>`;
-  }
 }
 
 export { VisitDentist };

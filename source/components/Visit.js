@@ -148,6 +148,7 @@ class Visit {
 
     const card = document.createElement("div");
     card.className = "visit-card";
+    card.draggable = true;
 
     const closeButton = document.createElement("button");
     closeButton.type = "button";

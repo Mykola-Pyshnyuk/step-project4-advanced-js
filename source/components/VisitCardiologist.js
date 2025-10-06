@@ -18,18 +18,6 @@ class VisitCardiologist {
       `
     );
   }
-
-  renderVisitCard(
-    visitFullInfo,
-    { bloodPressure, bodyMassIndex, heartDisease, age }
-  ) {
-    visitFullInfo.innerHTML = `
-    <p>Звичайний тиск: ${bloodPressure}</p>
-    <p>Індекс маси тіла: ${bodyMassIndex}</p>
-    <p>Перенесені захворювання: ${(heartDisease = "Немає")}</p>
-    <p>Вік: ${age}</p>
-    `;
-  }
 }
 
 export { VisitCardiologist };
