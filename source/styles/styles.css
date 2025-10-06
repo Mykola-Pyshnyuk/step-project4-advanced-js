@@ -5,12 +5,34 @@
 @import './footer.css';
 @import './btn.css';
 
-body {
+html, body {
+  height: 100%;
   margin: 0;
   font-family: "Segoe UI", Roboto, sans-serif;
   background: linear-gradient(135deg, #f0f9ff, #e0f2fe, #dbeafe);
   color: #111827;
+}
+
+body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+}
+
+body > section {
+  flex: 1; 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 16px;
+  box-sizing: border-box;
+}
+
+#root {
+  width: 100%;
+  max-width: 1200px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+  box-sizing: border-box;
 }

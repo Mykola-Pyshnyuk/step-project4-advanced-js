@@ -1,33 +1,36 @@
+
 .footer {
   flex-shrink: 0;
   padding: 10px 20px;
   font-size: 14px;
+
   background: linear-gradient(135deg, #2563eb, #3b82f6);
   color: #ffffff;
-  box-shadow: 0 -4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
   border-top-left-radius: 15px;
   border-top-right-radius: 15px;
-  position: fixed;
+
+  position: relative;
   bottom: 0;
   left: 0;
   right: 0;
 
-  display: flex;               
-  justify-content: space-between; 
-  align-items: center;         
-  gap: 12px;                    
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
 
-  background-size: 200% 200%; 
+  background-size: 200% 200%;
   transition: background-position 0.8s ease;
 }
 
 .footer:hover {
-  background-position: right center; 
+  background-position: right center;
 }
 
-.footer-text { 
-  font-weight: 500; 
-  color: #ffffff; 
+.footer-text {
+  font-weight: 500;
+  color: #ffffff;
   display: flex;
   align-items: center;
   gap: 5px;
