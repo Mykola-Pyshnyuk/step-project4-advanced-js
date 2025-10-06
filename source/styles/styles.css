@@ -3,6 +3,7 @@
 @import './cards.css';
 @import './modal.css';
 @import './footer.css';
+@import './btn.css';
 
 body {
   margin: 0;

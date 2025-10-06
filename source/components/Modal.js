@@ -26,6 +26,8 @@ class Modal {
 
   exitAccount(buttons, parent) {
     const confirmExit = document.createElement(`div`);
+    confirmExit.className = "confirm-exit-modal";
+    
 
     const message = document.createElement(`h4`);
     message.classList.add(`logout-message`);

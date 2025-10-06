@@ -34,19 +34,3 @@
 .logo-link:hover .logo-svg {
   transform: rotate(15deg);
 }
-
-.login {
-  padding: 8px 20px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #2563eb, #3b82f6);
-  border: none;
-  color: white;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.login:hover {
-  transform: translateY(-2px);
-  background: linear-gradient(135deg, #1e40af, #2563eb);
-}
