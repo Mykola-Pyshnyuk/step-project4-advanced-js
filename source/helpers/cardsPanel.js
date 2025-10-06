@@ -17,38 +17,45 @@ const FIELD_LABELS = {
   pressure: "Тиск",
   temperature: "Температура",
   residence: "Місце проживання",
-  additionalInfo: "Додаткова інформація"
+  additionalInfo: "Додаткова інформація",
 };
 
 const STATUS_LABELS = {
   open: "Активна",
-  done: "Завершена"
+  done: "Завершена",
 };
 
 const PRIORITY_LABELS = {
   low: "Низький",
   normal: "Середній",
-  high: "Високий"
+  high: "Високий",
 };
 
 const SELECT_OPTIONS = {
   doctor: [
     { value: "Кардіолог", label: "Кардіолог" },
     { value: "Стоматолог", label: "Стоматолог" },
-    { value: "Терапевт", label: "Терапевт" }
+    { value: "Терапевт", label: "Терапевт" },
   ],
   status: [
     { value: "open", label: STATUS_LABELS.open },
-    { value: "done", label: STATUS_LABELS.done }
+    { value: "done", label: STATUS_LABELS.done },
   ],
   priority: [
     { value: "low", label: PRIORITY_LABELS.low },
     { value: "normal", label: PRIORITY_LABELS.normal },
-    { value: "high", label: PRIORITY_LABELS.high }
-  ]
+    { value: "high", label: PRIORITY_LABELS.high },
+  ],
 };
 
-const CARD_MAIN_FIELDS = ["fullName", "doctor", "visitPurpose", "visitDescription", "priority", "status"];
+const CARD_MAIN_FIELDS = [
+  "fullName",
+  "doctor",
+  "visitPurpose",
+  "visitDescription",
+  "priority",
+  "status",
+];
 const CARD_EXTRA_FIELDS = [
   "bloodPressure",
   "bodyMassIndex",
@@ -60,7 +67,7 @@ const CARD_EXTRA_FIELDS = [
   "pressure",
   "temperature",
   "residence",
-  "additionalInfo"
+  "additionalInfo",
 ];
 
 const EDITABLE_FIELDS = CARD_MAIN_FIELDS.concat(CARD_EXTRA_FIELDS);
@@ -72,14 +79,14 @@ const OVERLAY_CLASS = "card-edit-overlay";
 const NOTIFICATION_STYLES = {
   info: { background: "#e0f2fe", color: "#1d4ed8" },
   success: { background: "#dcfce7", color: "#15803d" },
-  error: { background: "#fee2e2", color: "#b91c1c" }
+  error: { background: "#fee2e2", color: "#b91c1c" },
 };
 
 const state = {
   cards: [],
   filters: { status: "", priority: "", search: "" },
   tempId: 0,
-  notificationTimer: null
+  notificationTimer: null,
 };
 
 let activeOverlayEscHandler = null;
@@ -159,14 +166,14 @@ function normalizePriority(value) {
 
   const priorityMap = {
     low: "low",
-    "низький": "low",
-    "низька": "low",
+    низький: "low",
+    низька: "low",
     high: "high",
-    "високий": "high",
-    "висока": "high",
+    високий: "high",
+    висока: "high",
     normal: "normal",
-    "середній": "normal",
-    "середня": "normal"
+    середній: "normal",
+    середня: "normal",
   };
 
   return priorityMap[normalized] || normalized;
@@ -256,7 +263,7 @@ function matchesFilters(card) {
       card.additionalInfo,
       card.residence,
       getStatusLabel(card.status),
-      getPriorityLabel(card.priority)
+      getPriorityLabel(card.priority),
     ]
       .filter(Boolean)
       .join(" ")
@@ -274,6 +281,7 @@ function createCardElement(card) {
   const cardBox = document.createElement("div");
   cardBox.className = "visit-card";
   cardBox.dataset.cardId = card.localId;
+  cardBox.draggable = true;
 
   const closeButton = document.createElement("button");
   closeButton.type = "button";
@@ -290,7 +298,11 @@ function createCardElement(card) {
   detailsBox.style.display = "none";
 
   CARD_EXTRA_FIELDS.forEach(function (field) {
-    if (card[field] !== undefined && card[field] !== null && card[field] !== "") {
+    if (
+      card[field] !== undefined &&
+      card[field] !== null &&
+      card[field] !== ""
+    ) {
       appendInfoLine(detailsBox, field, card[field]);
     }
   });
@@ -347,7 +359,10 @@ function createCardElement(card) {
 
 function appendInfoLine(parent, fieldName, value) {
   const line = document.createElement("p");
-  line.textContent = (FIELD_LABELS[fieldName] || fieldName) + ": " + formatValue(fieldName, value);
+  line.textContent =
+    (FIELD_LABELS[fieldName] || fieldName) +
+    ": " +
+    formatValue(fieldName, value);
   parent.appendChild(line);
 }
 
@@ -410,7 +425,8 @@ function openEditModal(card) {
 
   const fieldsWrapper = document.createElement("div");
   fieldsWrapper.style.display = "grid";
-  fieldsWrapper.style.gridTemplateColumns = "repeat(auto-fill, minmax(200px, 1fr))";
+  fieldsWrapper.style.gridTemplateColumns =
+    "repeat(auto-fill, minmax(200px, 1fr))";
   fieldsWrapper.style.gap = "8px";
   fieldsWrapper.style.maxHeight = "50vh";
   fieldsWrapper.style.overflowY = "auto";
@@ -500,7 +516,8 @@ function openEditModal(card) {
 
     updateCard(card.id, updatedCard)
       .then(function (savedCard) {
-        const mergedCard = savedCard || Object.assign({}, card, updatedCard, { id: card.id });
+        const mergedCard =
+          savedCard || Object.assign({}, card, updatedCard, { id: card.id });
         const freshCard = cloneCard(mergedCard);
 
         state.cards = state.cards.map(function (item) {
@@ -591,7 +608,10 @@ function setupFilters() {
   });
 
   filterForm.addEventListener("change", function (event) {
-    if (event.target && (event.target.name === "status" || event.target.name === "priority")) {
+    if (
+      event.target &&
+      (event.target.name === "status" || event.target.name === "priority")
+    ) {
       applyFiltersFromForm(filterForm);
     }
   });
@@ -643,8 +663,14 @@ function renderCards() {
   const filteredCards = state.cards.filter(matchesFilters);
 
   if (filteredCards.length === 0) {
-    const hasFilters = Boolean(state.filters.status || state.filters.priority || state.filters.search);
-    showEmptyMessage(hasFilters ? "За вибраними фільтрами картки не знайдено" : DEFAULT_EMPTY_TEXT);
+    const hasFilters = Boolean(
+      state.filters.status || state.filters.priority || state.filters.search
+    );
+    showEmptyMessage(
+      hasFilters
+        ? "За вибраними фільтрами картки не знайдено"
+        : DEFAULT_EMPTY_TEXT
+    );
 
     if (hasFilters) {
       showNotification("За вибраними фільтрами картки не знайдено", "info");
@@ -658,6 +684,8 @@ function renderCards() {
   filteredCards.forEach(function (card) {
     root.appendChild(createCardElement(card));
   });
+
+  dragDrop();
 }
 
 export function clearCardsUI() {
@@ -696,7 +724,10 @@ export function loadCards() {
     })
     .catch(function () {
       showEmptyMessage("Не вдалося завантажити картки");
-      showNotification("Не вдалося завантажити картки. Спробуйте ще раз.", "error");
+      showNotification(
+        "Не вдалося завантажити картки. Спробуйте ще раз.",
+        "error"
+      );
     });
 }
 
@@ -726,7 +757,10 @@ export function handleCreateCardFromForm(visitInstance) {
       return createdCard;
     })
     .catch(function () {
-      showNotification("Не вдалося створити картку. Перевірте дані та спробуйте ще раз.", "error");
+      showNotification(
+        "Не вдалося створити картку. Перевірте дані та спробуйте ще раз.",
+        "error"
+      );
     });
 }
 
@@ -744,3 +778,58 @@ document.addEventListener("DOMContentLoaded", function () {
   setupEmptyPlaceholder();
   setupFilters();
 });
+
+//! ці функції малаб бути методами класу але картки візитів створюються тут тому і тут викликаються
+function dragDrop() {
+  const visitCards = document.querySelectorAll(".visit-card");
+  const container = document.querySelector("#root");
+
+  visitCards.forEach((card) => {
+    card.addEventListener("dragstart", () => {
+      card.style.opacity = "0.7";
+      card.classList.add("dragging");
+      console.log("grag-start");
+    });
+
+    card.addEventListener("dragend", () => {
+      card.removeAttribute("style");
+      card.classList.remove("dragging");
+      console.log("drag-end");
+    });
+  });
+
+  container.addEventListener("dragover", (event) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+    const card = document.querySelector(".dragging");
+
+    const dropPosition = getDropPosition(
+      container,
+      event.clientY,
+      event.clientX
+    );
+
+    if (dropPosition) {
+      container.insertBefore(card, dropPosition);
+    } else {
+      container.append(card);
+    }
+  });
+}
+
+function getDropPosition(container, cordinatY, cordinatX) {
+  const dragCards = [
+    ...container.querySelectorAll(".visit-card:not(.dragging)"),
+  ]; //? всі картки візитів крім тієї що перетягується
+
+  for (const card of dragCards) {
+    const cardPosition = card.getBoundingClientRect();
+    if (
+      cordinatY < cardPosition.bottom &&
+      cordinatX < cardPosition.right - 120 // * віднімаю щоб приблизно попадати на картку
+    ) {
+      return card;
+    }
+  }
+  return null;
+}

@@ -148,6 +148,7 @@ class Visit {
 
     const card = document.createElement("div");
     card.className = "visit-card";
+    card.draggable = true;
 
     const closeButton = document.createElement("button");
     closeButton.type = "button";
@@ -160,7 +161,7 @@ class Visit {
       { label: "Лікар", value: this.visit?.doctor?.value },
       { label: "Мета візиту", value: this.visit?.visitPurpose?.value },
       { label: "Опис візиту", value: this.visit?.visitDescription?.value },
-      { label: "Терміновість", value: this.visit?.priority?.value }
+      { label: "Терміновість", value: this.visit?.priority?.value },
     ];
 
     info.forEach((item) => {
