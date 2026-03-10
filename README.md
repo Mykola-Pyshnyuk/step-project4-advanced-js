@@ -1,3 +1,4 @@
+```
 step-project-advanced-js
 │
 ├─ public/
@@ -24,7 +25,7 @@ step-project-advanced-js
 │ │ └─ cardsPanel.js
 │ │
 │ └─ styles/ // стилі
-
+```
 - Пишнюк Микола
 
 - створив прототип сторінки
